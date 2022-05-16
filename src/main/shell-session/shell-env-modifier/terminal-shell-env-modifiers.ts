@@ -12,11 +12,16 @@ import type { CatalogEntityRegistry } from "../../catalog";
 
 interface Dependencies {
   extensions: IComputedValue<LensMainExtension[]>;
-  catalogEntityRegistry: CatalogEntityRegistry;
+  entityRegistry: CatalogEntityRegistry;
 }
 
-export const terminalShellEnvModify = ({ extensions, catalogEntityRegistry }: Dependencies) =>
-  (clusterId: ClusterId, env: Record<string, string | undefined>) => {
+export type TerminalShellEnvModify = (clusterId: ClusterId, env: Partial<Record<string, string>>) => Partial<Record<string, string>>;
+
+export const terminalShellEnvModify = ({
+  extensions,
+  entityRegistry,
+}: Dependencies): TerminalShellEnvModify => (
+  (clusterId, env) => {
     const terminalShellEnvModifiers = computed(() => (
       extensions.get()
         .map((extension) => extension.terminalShellEnvModifier)
@@ -28,7 +33,7 @@ export const terminalShellEnvModify = ({ extensions, catalogEntityRegistry }: De
       return env;
     }
 
-    const entity = catalogEntityRegistry.findById(clusterId);
+    const entity = entityRegistry.findById(clusterId);
 
     if (entity) {
       const ctx = { catalogEntity: entity };
@@ -39,4 +44,5 @@ export const terminalShellEnvModify = ({ extensions, catalogEntityRegistry }: De
     }
 
     return env;
-  };
+  }
+);
